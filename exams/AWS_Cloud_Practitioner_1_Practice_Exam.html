@@ -197,6 +197,57 @@
             background-size: 100% 100%;
         }
 
+        /* Added styles for checkboxes */
+        input[type="checkbox"] {
+            height: var(--check-box-size);
+            width: var(--check-box-size);
+            border: calc(var(--check-box-size) / 8) solid #939393;
+            background-color: transparent;
+            position: relative;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            font-size: inherit;
+            transition: 0.3s;
+            flex-shrink: 0;
+            border-radius: 3px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        input[type="checkbox"]:checked {
+            border-color: var(--check-box-color);
+            background-color: var(--check-box-color);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '';
+            display: block;
+            width: calc(var(--check-box-size) * 0.2);
+            height: calc(var(--check-box-size) * 0.5);
+            border: solid white;
+            border-width: 0 calc(var(--check-box-size) / 8) calc(var(--check-box-size) / 8) 0;
+            position: absolute;
+            left: 39%;
+            top: 22%;
+            transform: translate(calc(-50% + 1.5px), calc(-50% + 2.5px)) rotate(45deg);
+        }
+
+        input[type="checkbox"]:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        input[type="checkbox"]:disabled:checked {
+            background-color: #777;
+            border-color: #555;
+        }
+
+        input[type="checkbox"]:disabled:checked::after {
+            border-color: #ccc;
+        }
+
 
         label {
             display: inline-flex;
@@ -221,6 +272,8 @@
             }
 
             input[type="radio"],
+            input[type="checkbox"],
+            /* Added checkbox */
             label {
                 cursor: default;
             }
@@ -330,8 +383,24 @@
                 border-color: #000000 !important;
                 background-image: radial-gradient(#000 50%, transparent 50%) !important;
                 background-size: 70% 70% !important;
-
             }
+
+            /* Print styles for checkboxes */
+            input[type="checkbox"] {
+                border-color: #939393 !important;
+                background-color: transparent !important;
+            }
+
+            input[type="checkbox"]:checked {
+                background-color: #000000 !important;
+                /* Simple filled box for print */
+            }
+
+            input[type="checkbox"]:checked::after {
+                /* Hide pseudo checkmark for print if it causes issues, or simplify */
+                border-color: white !important;
+            }
+
 
             img {
                 max-width: 300px !important;
@@ -2680,22 +2749,25 @@
                 return;
             }
 
+            // Shuffle questions
             for (let i = questionData.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [questionData[i], questionData[j]] = [questionData[j], questionData[i]];
             }
 
+            // MODIFIED: userAnswers initialization
             userAnswers = questionData.map(q => {
-                const formattedQ = formatSingleQuestionData(q);
+                const formattedQ = formatSingleQuestionData(q); // formatSingleQuestionData now handles assessment_type
                 return {
                     questionId: q.id,
-                    userAnswer: null,
-                    correctAnswer: formattedQ.correctAnswer,
+                    userAnswer: null, // Will be a string for single-choice, array of strings for multi-select
+                    correctAnswer: formattedQ.correctAnswer, // Now an array of correct answer texts
                     isCorrect: null,
                     submitted: false,
                     explanation: formattedQ.explanation,
                     originalAnswers: q.prompt.answers,
-                    shuffledAnswersForDisplay: formattedQ.answers
+                    shuffledAnswersForDisplay: formattedQ.answers,
+                    assessment_type: q.assessment_type // Store assessment_type
                 };
             });
 
@@ -2724,7 +2796,7 @@
         }
 
         function startTimer() {
-            timeLeft = 90 * 60;
+            timeLeft = 90 * 60; // 90 minutes
             timerDisplay.textContent = `Time Left: 90:00`;
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -2736,35 +2808,46 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     timerDisplay.textContent = "Time's Up!";
-                    endExam(true);
+                    endExam(true); // Auto-submit
                 }
             }, 1000);
         }
 
+        // MODIFIED: formatSingleQuestionData to handle single and multiple correct answers
         function formatSingleQuestionData(singleQuizData = null) {
             if (!singleQuizData || !singleQuizData.prompt || !singleQuizData.correct_response) {
                 return {
                     id: "error-" + Math.random().toString(36).substr(2, 9),
                     question: "Error: Invalid question data format.",
                     answers: [],
-                    correctAnswer: "",
-                    explanation: "Could not load this question due to data format issues."
+                    correctAnswer: [], // Return empty array for error
+                    explanation: "Could not load this question due to data format issues.",
+                    assessment_type: "multiple-choice" // Default
                 };
             }
-            const { prompt, correct_response, id } = singleQuizData;
+            const { prompt, correct_response, id, assessment_type } = singleQuizData;
             const questionText = prompt.question;
             const originalAnswersArray = prompt.answers;
-            const correctAnswerLetter = correct_response[0];
-            let correctAnswerText = "Error: Correct answer could not be determined.";
 
-            if (Array.isArray(originalAnswersArray) && correctAnswerLetter) {
-                const answerIndex = correctAnswerLetter.toLowerCase().charCodeAt(0) - 97;
-                if (answerIndex >= 0 && answerIndex < originalAnswersArray.length) {
-                    correctAnswerText = originalAnswersArray[answerIndex];
-                }
+            let correctAnswersTextArray = []; // Will store the actual text of correct answers
+
+            if (Array.isArray(originalAnswersArray) && Array.isArray(correct_response)) {
+                correct_response.forEach(letter => { // Iterate through all correct response letters
+                    const answerIndex = letter.toLowerCase().charCodeAt(0) - 97; // 'a' -> 0, 'b' -> 1, etc.
+                    if (answerIndex >= 0 && answerIndex < originalAnswersArray.length) {
+                        correctAnswersTextArray.push(originalAnswersArray[answerIndex]);
+                    }
+                });
             }
 
+            if (correctAnswersTextArray.length === 0 && originalAnswersArray.length > 0) {
+                // If parsing failed but there were answers, indicate an issue.
+                correctAnswersTextArray.push("Error: Correct answer(s) could not be determined for this question.");
+            }
+
+
             let shuffledDisplayAnswers = [...originalAnswersArray];
+            // Shuffle answers for display
             for (let i = shuffledDisplayAnswers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffledDisplayAnswers[i], shuffledDisplayAnswers[j]] = [shuffledDisplayAnswers[j], shuffledDisplayAnswers[i]];
@@ -2773,12 +2856,15 @@
             return {
                 id: id,
                 question: questionText,
-                answers: shuffledDisplayAnswers,
-                correctAnswer: correctAnswerText,
+                answers: shuffledDisplayAnswers, // Shuffled for display
+                correctAnswer: correctAnswersTextArray, // Now an array of correct answer texts
                 explanation: prompt?.explanation || "No explanation available.",
+                assessment_type: assessment_type // Pass through assessment_type
             };
         }
 
+
+        // MODIFIED: displayCurrentQuestion to use checkboxes for multi-select
         function displayCurrentQuestion() {
             quizContainerElement.innerHTML = '';
             if (currentQuestionIndex >= totalNumberOfQuestions || totalNumberOfQuestions === 0) {
@@ -2787,32 +2873,56 @@
             }
 
             const userAnswerData = userAnswers[currentQuestionIndex];
+            const questionActualData = questionData[currentQuestionIndex]; // Get original question data for type
             const displayAnswers = userAnswerData.shuffledAnswersForDisplay;
+            const questionType = questionActualData.assessment_type; // "multi-select" or "multiple-choice"
 
-            const questionObj = {
+
+            const questionObj = { // This is mainly for ID and explanation, question text from original data
                 id: userAnswerData.questionId,
-                question: questionData[currentQuestionIndex].prompt.question,
+                question: questionActualData.prompt.question,
                 explanation: userAnswerData.explanation
             };
 
             const optionsHTML = displayAnswers
                 .map((optionContent, index) => {
                     const optionId = `${questionObj.id}_option_shuffled_${index}`;
-                    const isChecked = userAnswerData.submitted && userAnswerData.userAnswer === optionContent;
-                    const isDisabled = userAnswerData.submitted;
+                    const inputType = questionType === "multi-select" ? "checkbox" : "radio";
 
+                    let isChecked = false;
+                    if (userAnswerData.userAnswer !== null) { // Check if there's a stored answer
+                        if (questionType === "multi-select") {
+                            isChecked = userAnswerData.userAnswer.includes(optionContent);
+                        } else {
+                            isChecked = userAnswerData.userAnswer === optionContent;
+                        }
+                    }
+
+                    const isDisabled = userAnswerData.submitted;
                     let labelClass = "";
+
                     if (userAnswerData.submitted) {
-                        if (optionContent === userAnswerData.correctAnswer) {
-                            labelClass = "correct-answer";
-                        } else if (isChecked) {
-                            labelClass = "incorrect-answer";
+                        const isCorrectOption = userAnswerData.correctAnswer.includes(optionContent);
+                        if (isCorrectOption) {
+                            labelClass = "correct-answer"; // Highlight correct options in green
+                        }
+
+                        // Check if the user selected this option
+                        let userSelectedThisOption = false;
+                        if (questionType === "multi-select" && Array.isArray(userAnswerData.userAnswer)) {
+                            userSelectedThisOption = userAnswerData.userAnswer.includes(optionContent);
+                        } else if (questionType === "multiple-choice") {
+                            userSelectedThisOption = userAnswerData.userAnswer === optionContent;
+                        }
+
+                        if (userSelectedThisOption && !isCorrectOption) {
+                            labelClass = "incorrect-answer"; // Highlight user's incorrect selections in red
                         }
                     }
 
                     return `
                         <div class="question-lable ${labelClass}">
-                          <input type="radio" id="${optionId}" name="answer_${questionObj.id}" 
+                          <input type="${inputType}" id="${optionId}" name="answer_${questionObj.id}" 
                                  value="${optionContent}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} />
                           <label for="${optionId}" class="${isDisabled ? 'disabled' : ''}">${optionContent}</label>
                         </div>`;
@@ -2824,7 +2934,8 @@
                 if (userAnswerData.isCorrect) {
                     feedbackHTML = `<div class="feedback-message" style="background-color: var(--success-background); color: var(--success);">✓ Correct!</div>`;
                 } else {
-                    feedbackHTML = `<div class="feedback-message" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger);">✗ Incorrect. The correct answer is highlighted in green.</div>`;
+                    const message = "✗ Incorrect. The correct answer(s) are highlighted in green.";
+                    feedbackHTML = `<div class="feedback-message" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger);">${message}</div>`;
                 }
             }
 
@@ -2864,40 +2975,72 @@
             updateNavigationButtons();
         }
 
-        function handleSubmitSingleAnswer(event) {
-            const processed = processCurrentAnswer();
 
-            if (processed) {
-                displayCurrentQuestion();
+        function handleSubmitSingleAnswer(event) {
+            const processed = processCurrentAnswer(); // processCurrentAnswer now handles both types
+
+            if (processed) { // If an answer was successfully processed (or already submitted)
+                displayCurrentQuestion(); // Re-render to show feedback and disable inputs
             }
         }
 
+        // MODIFIED: processCurrentAnswer to handle multi-select with checkboxes
         function processCurrentAnswer() {
-            if (userAnswers[currentQuestionIndex].submitted) return true;
+            if (userAnswers[currentQuestionIndex].submitted) return true; // Already processed
 
             const questionId = questionData[currentQuestionIndex].id;
-            const selectedOptionInput = quizContainerElement.querySelector(`input[name="answer_${questionId}"]:checked`);
+            const currentQuestionUserAnswer = userAnswers[currentQuestionIndex];
+            const assessmentType = currentQuestionUserAnswer.assessment_type;
 
-            if (!selectedOptionInput) {
-                alert("Please select an answer before submitting.");
-                return false;
+            if (assessmentType === "multi-select") {
+                const selectedOptionInputs = Array.from(quizContainerElement.querySelectorAll(`input[name="answer_${questionId}"]:checked`));
+
+                // For multi-select, it's okay to submit with no options selected if that's the user's choice,
+                // unless a specific validation (e.g., "select at least one") is desired.
+                // For now, we'll allow submitting with zero selections, which will be marked incorrect if any answer was expected.
+                // if (selectedOptionInputs.length === 0) {
+                //     alert("Please select at least one answer before submitting for multi-select questions.");
+                //     return false;
+                // }
+                const userAnswerTexts = selectedOptionInputs.map(input => input.value);
+                currentQuestionUserAnswer.userAnswer = userAnswerTexts; // Store array of selected answer texts
+
+                const correctAnswers = currentQuestionUserAnswer.correctAnswer; // Array of correct answer texts
+
+                // Check for correctness: all selected answers must be in correctAnswers, 
+                // and all answers in correctAnswers must be selected.
+                const correctAnswersSet = new Set(correctAnswers);
+                const userAnswersSet = new Set(userAnswerTexts);
+
+                currentQuestionUserAnswer.isCorrect = correctAnswers.length === userAnswerTexts.length &&
+                    correctAnswers.every(ans => userAnswersSet.has(ans)) &&
+                    userAnswerTexts.every(ans => correctAnswersSet.has(ans));
+
+            } else { // "multiple-choice" (single select radio)
+                const selectedOptionInput = quizContainerElement.querySelector(`input[name="answer_${questionId}"]:checked`);
+                if (!selectedOptionInput) {
+                    alert("Please select an answer before submitting.");
+                    return false;
+                }
+                const userAnswerText = selectedOptionInput.value;
+                currentQuestionUserAnswer.userAnswer = userAnswerText; // Store single answer text
+                // correctAnswer is an array, but for single-choice, it usually has one element.
+                currentQuestionUserAnswer.isCorrect = currentQuestionUserAnswer.correctAnswer.includes(userAnswerText);
             }
 
-            const userAnswerText = selectedOptionInput.value;
-            const correctAnswerText = userAnswers[currentQuestionIndex].correctAnswer;
+            currentQuestionUserAnswer.submitted = true;
 
-            userAnswers[currentQuestionIndex].userAnswer = userAnswerText;
-            userAnswers[currentQuestionIndex].isCorrect = (userAnswerText === correctAnswerText);
-            userAnswers[currentQuestionIndex].submitted = true;
-
-            if (!userAnswers[currentQuestionIndex].shuffledAnswersForDisplay) {
+            // This logic to store shuffled answers might not be strictly needed if they don't change per display
+            // but ensures consistency if re-displaying the question later.
+            if (!currentQuestionUserAnswer.shuffledAnswersForDisplay || currentQuestionUserAnswer.shuffledAnswersForDisplay.length === 0) {
                 const currentOptions = Array.from(quizContainerElement.querySelectorAll(`input[name="answer_${questionId}"]`)).map(input => input.value);
-                userAnswers[currentQuestionIndex].shuffledAnswersForDisplay = currentOptions;
+                currentQuestionUserAnswer.shuffledAnswersForDisplay = currentOptions;
             }
 
             updateScoreDisplay();
             return true;
         }
+
 
         function updateScoreDisplay() {
             const correctCount = userAnswers.filter(ans => ans.submitted && ans.isCorrect).length;
@@ -2921,6 +3064,7 @@
 
             prevQuestionButton.disabled = currentQuestionIndex === 0;
 
+            // Next button enabled only if current question is submitted
             const currentQuestionIsSubmitted = userAnswers[currentQuestionIndex]?.submitted;
             nextQuestionButton.disabled = !currentQuestionIsSubmitted;
 
@@ -2933,16 +3077,30 @@
 
         prevQuestionButton.addEventListener('click', () => {
             if (currentQuestionIndex > 0) {
+                // No need to process answer here, just navigate
                 currentQuestionIndex--;
                 displayCurrentQuestion();
             }
         });
 
         nextQuestionButton.addEventListener('click', () => {
+            // Ensure current answer is processed if moving next (though submit button should handle this)
+            // The current model relies on the "Submit Answer" button per question.
             if (currentQuestionIndex < totalNumberOfQuestions - 1) {
+                if (!userAnswers[currentQuestionIndex].submitted) {
+                    // This case should ideally not happen if "Next" is only enabled after submission.
+                    // However, as a safeguard:
+                    // alert("Please submit your answer for the current question before proceeding.");
+                    // return;
+                }
                 currentQuestionIndex++;
                 displayCurrentQuestion();
             } else {
+                // This is "Finish Exam"
+                if (!userAnswers[currentQuestionIndex].submitted) {
+                    // alert("Please submit your answer for the final question.");
+                    // return;
+                }
                 endExam(false);
             }
         });
@@ -2951,23 +3109,43 @@
             clearInterval(timerInterval);
             if (scoreStatsContainerElement) scoreStatsContainerElement.style.display = 'none';
 
+            // If timeout and current question isn't submitted, try to process it with current selections
             if (isTimeout && currentQuestionIndex < totalNumberOfQuestions && !userAnswers[currentQuestionIndex]?.submitted) {
+                // Attempt to process the current, unsubmitted answer if time runs out
                 const questionId = questionData[currentQuestionIndex].id;
-                const currentQuestionDOM = document.querySelector(`.single-question-container[data-question-id="${questionId}"]`);
-                let selectedOptionInput = null;
-                if (currentQuestionDOM) {
-                    selectedOptionInput = currentQuestionDOM.querySelector(`input[name="answer_${questionId}"]:checked`);
-                }
+                const assessmentType = userAnswers[currentQuestionIndex].assessment_type;
 
-                if (selectedOptionInput) {
-                    processCurrentAnswer();
+                if (assessmentType === "multi-select") {
+                    const selectedOptionInputs = Array.from(quizContainerElement.querySelectorAll(`input[name="answer_${questionId}"]:checked`));
+                    userAnswers[currentQuestionIndex].userAnswer = selectedOptionInputs.map(input => input.value);
                 } else {
-                    userAnswers[currentQuestionIndex].submitted = true;
-                    userAnswers[currentQuestionIndex].isCorrect = false;
-                    userAnswers[currentQuestionIndex].userAnswer = "Not Answered";
+                    const selectedOptionInput = quizContainerElement.querySelector(`input[name="answer_${questionId}"]:checked`);
+                    if (selectedOptionInput) {
+                        userAnswers[currentQuestionIndex].userAnswer = selectedOptionInput.value;
+                    } else {
+                        userAnswers[currentQuestionIndex].userAnswer = "Not Answered"; // Mark as not answered
+                    }
                 }
+                // Re-evaluate correctness based on auto-submission
+                const currentQInfo = userAnswers[currentQuestionIndex];
+                if (currentQInfo.userAnswer !== "Not Answered" && currentQInfo.userAnswer !== null) {
+                    if (assessmentType === "multi-select") {
+                        const correctAnswersSet = new Set(currentQInfo.correctAnswer);
+                        const userAnswersSet = new Set(currentQInfo.userAnswer);
+                        currentQInfo.isCorrect = currentQInfo.correctAnswer.length === currentQInfo.userAnswer.length &&
+                            currentQInfo.correctAnswer.every(ans => userAnswersSet.has(ans)) &&
+                            currentQInfo.userAnswer.every(ans => correctAnswersSet.has(ans));
+                    } else {
+                        currentQInfo.isCorrect = currentQInfo.correctAnswer.includes(currentQInfo.userAnswer);
+                    }
+                } else {
+                    currentQInfo.isCorrect = false;
+                }
+                userAnswers[currentQuestionIndex].submitted = true;
             }
 
+
+            // Mark all remaining unsubmitted questions as "Not Answered" and incorrect
             userAnswers.forEach(ans => {
                 if (!ans.submitted) {
                     ans.submitted = true;
@@ -3008,24 +3186,32 @@
             if (passFailStatusElement) {
                 if (parseFloat(finalScorePercentage) >= passPercent) {
                     passFailStatusElement.textContent = "Congratulations! You Passed!";
-                    passFailStatusElement.className = "prominent-status pass-message";
+                    passFailStatusElement.className = "prominent-status pass-message"; // Ensure you have .pass-message styles
+                    passFailStatusElement.style.color = 'var(--success)'; // Example inline style if class isn't defined
                 } else {
                     passFailStatusElement.textContent = "Unfortunately, you did not pass. Keep practicing!";
-                    passFailStatusElement.className = "prominent-status fail-message";
+                    passFailStatusElement.className = "prominent-status fail-message"; // Ensure .fail-message styles
+                    passFailStatusElement.style.color = 'var(--danger)'; // Example inline style
                 }
             }
 
             if (isTimeout) {
-                const timeoutMessage = document.createElement('p');
-                timeoutMessage.textContent = "The exam was submitted automatically because the time ran out.";
-                timeoutMessage.style.color = 'var(--warning)';
-                timeoutMessage.style.marginTop = '10px';
-                timeoutMessage.style.fontSize = '0.9em';
-                const overallStatusDiv = document.getElementById('overall-status-section');
-                if (overallStatusDiv && overallStatusDiv.parentNode === resultsPageContainer) {
-                    overallStatusDiv.parentNode.insertBefore(timeoutMessage, overallStatusDiv.nextSibling);
-                } else {
-                    resultsPageContainer.insertBefore(timeoutMessage, resultsPageContainer.children[1] || null);
+                const timeoutMessageElement = resultsPageContainer.querySelector('#timeout-message-id'); // check if exists
+                if (!timeoutMessageElement) { // only add if not already present
+                    const timeoutMessage = document.createElement('p');
+                    timeoutMessage.id = 'timeout-message-id';
+                    timeoutMessage.textContent = "The exam was submitted automatically because the time ran out.";
+                    timeoutMessage.style.color = 'var(--warning)';
+                    timeoutMessage.style.marginTop = '10px';
+                    timeoutMessage.style.fontSize = '0.9em';
+                    const overallStatusDiv = document.getElementById('overall-status-section');
+                    if (overallStatusDiv && overallStatusDiv.parentNode === resultsPageContainer) {
+                        overallStatusDiv.parentNode.insertBefore(timeoutMessage, overallStatusDiv.nextSibling);
+                    } else if (resultsPageContainer.firstChild) { // Fallback insertion
+                        resultsPageContainer.insertBefore(timeoutMessage, resultsPageContainer.children[1] || null);
+                    } else {
+                        resultsPageContainer.appendChild(timeoutMessage);
+                    }
                 }
             }
         }
@@ -3052,9 +3238,16 @@
         if (retakeQuizButton) {
             retakeQuizButton.addEventListener('click', () => {
                 resultsPageContainer.style.display = 'none';
+                // Remove timeout message if it exists from previous timed-out attempt
+                const timeoutMessageElement = resultsPageContainer.querySelector('#timeout-message-id');
+                if (timeoutMessageElement) {
+                    timeoutMessageElement.remove();
+                }
+
                 startPageContainer.style.display = 'flex';
 
-                if (scoreStatsContainerElement) scoreStatsContainerElement.style.display = 'flex';
+
+                if (scoreStatsContainerElement) scoreStatsContainerElement.style.display = 'flex'; // Show score stats bar again
 
                 document.getElementById("current-score").textContent = "0";
                 document.getElementById("correct-answers").textContent = "0";
@@ -3062,15 +3255,19 @@
                 if (timerDisplay) timerDisplay.textContent = `Time Left: 90:00`;
 
                 currentQuestionIndex = 0;
+                userAnswers = []; // Clear previous answers
                 if (timerInterval) clearInterval(timerInterval);
-                timeLeft = 90 * 60;
+                timeLeft = 90 * 60; // Reset timer
                 // initializeQuiz() will be called by startExam when the user clicks "Start Exam" again
             });
         }
 
+        // Initial page setup
         quizMainContent.style.display = 'none';
         resultsPageContainer.style.display = 'none';
+        if (scoreStatsContainerElement) scoreStatsContainerElement.style.display = 'none'; // Hide score bar initially
         startPageContainer.style.display = 'flex';
+
 
     </script>
 </body>
