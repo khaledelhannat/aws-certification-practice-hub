@@ -133,12 +133,32 @@
             flex-direction: column;
             align-items: center;
             gap: 8px;
+            border-radius: 0 0 8px 8px;
+            border-left: 2px solid var(--aws-orange);
+            border-right: 2px solid var(--aws-orange);
+            border-bottom: 2px solid var(--aws-orange);
+            border-top: none;
         }
 
         #timer-container {
             font-size: 18px;
             color: var(--aws-orange);
             font-weight: bold;
+            background-color: var(--primary-color);
+            padding: 6px 15px;
+            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease-out;
+        }
+
+        #timer-container::before {
+            content: "⏱";
+            margin-right: 8px;
+            font-size: 1.1em;
+            line-height: 1;
+
         }
 
         #score-card-items {
@@ -148,9 +168,6 @@
             flex-wrap: wrap;
         }
 
-        #score-card-items>div {
-            margin: 0 10px;
-        }
 
 
         #quiz-main-content {
