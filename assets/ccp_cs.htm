@@ -844,6 +844,22 @@
                             </div>
                         </div>
                     </div>
+                    <div class="service-card" data-service-name="Budgets">
+                        <div class="service-card-inner">
+                            <div class="service-card-front">
+                                <div class="service-header">
+                                    <div class="service-name">Budgets</div><span class="tag billing">Billing</span>
+                                </div>
+                                <div class="service-description">Set custom budgets to track AWS costs/usage and receive
+                                    alerts.</div>
+                                <div class="service-analogy"><strong>Use Case:</strong> Monitor service costs; get
+                                    notified of overspending; track RI/SP utilization.</div>
+                            </div>
+                            <div class="service-card-back">
+                                <div class="service-name-back">Budgets</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="service-card" data-service-name="Billing Console">
                         <div class="service-card-inner">
                             <div class="service-card-front">
@@ -1011,7 +1027,7 @@
                         </div>
                     </div>
                     <div class="recall-card">
-                        <h3>AWS Support Plans</h3>
+                        <h3>Support Plans</h3>
                         <div class="recall-option">
                             <h4 class="option-title">Basic Support</h4>
                             <div class="option-desc">
@@ -1070,7 +1086,7 @@
                         </div>
                     </div>
                     <div class="recall-card">
-                        <h3>AWS Well-Architected Framework Pillars</h3>
+                        <h3>Well-Architected Framework Pillars</h3>
                         <div class="recall-option">
                             <h4 class="option-title">1. Operational Excellence</h4>
                             <div class="option-desc">
@@ -1149,10 +1165,9 @@
                         backFaceName.textContent = serviceName;
                     }
 
+                    // MODIFIED: Allow individual card flip anytime
                     card.addEventListener('click', () => {
-                        if (!flashcardModeActive) { // Only allow individual flip if flashcard mode is OFF
-                            card.classList.toggle('is-flipped');
-                        }
+                        card.classList.toggle('is-flipped');
                     });
                 });
 
@@ -1160,10 +1175,12 @@
                     flashcardModeActive = toggleCheckbox.checked;
                     serviceCards.forEach(card => {
                         if (flashcardModeActive) {
+                            // When mode is ON, set all cards to flipped (back)
                             if (!card.classList.contains('is-flipped')) {
                                 card.classList.add('is-flipped');
                             }
                         } else {
+                            // When mode is OFF, set all cards to un-flipped (front)
                             if (card.classList.contains('is-flipped')) {
                                 card.classList.remove('is-flipped');
                             }
@@ -1171,6 +1188,7 @@
                     });
                 });
 
+                // Ensure initial state reflects checkbox state on load
                 serviceCards.forEach(card => {
                     if (flashcardModeActive) {
                         if (!card.classList.contains('is-flipped')) {
@@ -1191,17 +1209,14 @@
 
             if (searchInput && recallCards.length > 0) {
                 searchInput.addEventListener('input', function () {
-                    const searchTerm = this.value.toLowerCase().trim(); // Case-insensitive search
+                    const searchTerm = this.value.toLowerCase().trim();
 
                     recallCards.forEach(card => {
                         const cardTitleElement = card.querySelector('h3');
                         let cardVisible = false;
 
-                        if (cardTitleElement) {
-                            const cardTitle = cardTitleElement.textContent.toLowerCase(); // Case-insensitive comparison
-                            if (cardTitle.includes(searchTerm)) {
-                                cardVisible = true;
-                            }
+                        if (cardTitleElement && cardTitleElement.textContent.toLowerCase().includes(searchTerm)) {
+                            cardVisible = true;
                         }
 
                         if (cardVisible) {
