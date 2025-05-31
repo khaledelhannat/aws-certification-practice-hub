@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CCP Cheat Sheet</title>
-    <link rel="icon" type="image/png" href="https://content.cloudthat.com/resources/wp-content/uploads/2023/12/dgt.png">
+    <title>AWS Cloud Practitioner Cheat Sheet</title>
     <style>
         * {
             margin: 0;
@@ -22,7 +21,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             margin: 0;
         }
@@ -34,7 +33,8 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border: 1px solid #e0e0e0;
-            flex-grow: 1;
+            flex-grow: 0;
+            margin-bottom: 20px;
         }
 
         .header {
@@ -78,18 +78,37 @@
             margin-bottom: 25px;
             border-bottom: 3px solid #ff9900;
             padding-bottom: 10px;
+            flex-wrap: wrap;
+            /* Allow wrapping for smaller screens */
         }
 
         .section-title {
             font-size: 1.8rem;
             color: #232f3e;
             font-weight: 700;
+            margin-right: 15px;
+            /* Add some space if items wrap */
         }
 
         .flashcard-toggle-area {
             display: flex;
             align-items: center;
+            margin-top: 10px;
+            /* Add margin if it wraps */
         }
+
+        @media (min-width: 600px) {
+
+            /* Prevent wrapping on larger screens for this specific header */
+            .services-section .section-header-controls {
+                flex-wrap: nowrap;
+            }
+
+            .services-section .flashcard-toggle-area {
+                margin-top: 0;
+            }
+        }
+
 
         .toggle-switch-label {
             font-size: 0.9rem;
@@ -310,56 +329,99 @@
             border: 1px solid #e0e0e0;
         }
 
-        .quick-summary h2 {
-            color: #232f3e;
-            font-size: 1.8rem;
-            text-align: center;
+        /* New styles for the recall summary header */
+        .recall-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
-            font-weight: 700;
+            /* Same as .section-header-controls */
+            /* border-bottom: 3px solid #ff9900; */
+            /* Consistent styling */
+            padding-bottom: 10px;
+            /* Consistent styling */
+            flex-wrap: wrap;
+            /* Allow wrapping on small screens */
         }
 
-        /* Styles for the new recall cards section */
+        .recall-summary-header h2 {
+            /* Targeting the h2 within this specific header */
+            color: #232f3e;
+            font-size: 1.8rem;
+            /* Consistent with .section-title */
+            font-weight: 700;
+            /* Consistent with .section-title */
+            margin-right: 15px;
+            /* Space between title and search */
+            margin-bottom: 0;
+            /* Reset default h2 margin */
+        }
+
+        .recall-summary-header #recall-search-input {
+            flex-grow: 1;
+            /* Allow search box to take available space */
+            max-width: 400px;
+            /* Adjust max-width as needed */
+            margin-top: 10px;
+            /* Add some margin if it wraps below title */
+        }
+
+        @media (min-width: 768px) {
+
+            /* Adjust breakpoint as needed */
+            .recall-summary-header {
+                flex-wrap: nowrap;
+                /* Prevent wrapping on larger screens */
+            }
+
+            .recall-summary-header #recall-search-input {
+                margin-top: 0;
+                /* No top margin when not wrapped */
+            }
+        }
+
+
         .recall-cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-            /* Allows two cards side-by-side on wider screens */
             gap: 25px;
-            /* Slightly increased gap */
-            margin-bottom: 30px;
+            /* margin-bottom: 30px; Removed as search is now part of header */
         }
 
         .recall-card {
             background: #ffffff;
             border: 1px solid #d2d6dc;
             border-left: 5px solid #ff9900;
-            /* AWS orange accent on the left */
             border-radius: 8px;
             padding: 20px;
-            /* Adjusted padding */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             display: flex;
-            /* Added for flex column layout */
             flex-direction: column;
-            /* Added for flex column layout */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
 
+        .recall-card.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            height: 0;
+            padding: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+            border: none;
+        }
+
+
         .recall-card h3 {
-            /* Title of the card e.g., "Instance Purchasing Options" */
             font-size: 1.35rem;
-            /* Reduced from 1.5rem */
             color: #232f3e;
             margin-bottom: 18px;
-            /* Adjusted margin */
             font-weight: 700;
             padding-bottom: 8px;
-            /* Adjusted padding */
             border-bottom: 2px solid #e0e0e0;
         }
 
         .recall-option {
-            /* Common class for option blocks */
             margin-bottom: 15px;
-            /* Adjusted margin */
         }
 
         .recall-option:last-child {
@@ -367,30 +429,41 @@
         }
 
         .recall-option .option-title {
-            /* Common class for option sub-titles */
             font-size: 1.05rem;
-            /* Reduced from 1.15rem */
             color: #232f3e;
             font-weight: 600;
             margin-bottom: 6px;
-            /* Adjusted margin */
         }
 
         .recall-option .option-desc p {
-            /* Common class for description paragraphs */
             font-size: 0.85rem;
-            /* Reduced from 0.9rem */
             color: #5a6c7d;
             margin-bottom: 4px;
-            /* Adjusted margin */
             line-height: 1.45;
-            /* Adjusted line-height */
         }
 
         .recall-option .option-desc p strong {
             font-weight: 600;
             color: #3b4859;
         }
+
+        #recall-search-input {
+            padding: 10px 15px;
+            /* Slightly adjusted padding */
+            font-size: 0.95rem;
+            /* Slightly adjusted font size */
+            border: 1px solid #d2d6dc;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        #recall-search-input:focus {
+            border-color: #ff9900;
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.25);
+            outline: none;
+        }
+
 
         footer {
             text-align: center;
@@ -407,8 +480,6 @@
         }
 
         @media (max-width: 920px) {
-
-            /* Adjusted breakpoint for recall cards to stack earlier */
             .recall-cards-grid {
                 grid-template-columns: 1fr;
             }
@@ -419,18 +490,29 @@
                 grid-template-columns: 1fr;
             }
 
-            .section-header-controls {
+            .section-header-controls,
+            .recall-summary-header {
+                /* Apply to both headers */
                 flex-direction: column;
                 align-items: flex-start;
             }
 
-            .section-title {
+            .section-header-controls .section-title,
+            .recall-summary-header h2 {
                 margin-bottom: 10px;
+                /* Space below title when stacked */
             }
 
-            .flashcard-toggle-area {
+            .flashcard-toggle-area,
+            .recall-summary-header #recall-search-input {
                 width: 100%;
-                justify-content: flex-start;
+                /* Full width when stacked */
+                margin-top: 10px;
+            }
+
+            .recall-summary-header #recall-search-input {
+                max-width: none;
+                /* Remove max-width when stacked */
             }
 
             .header h1 {
@@ -468,8 +550,8 @@
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Organizations</div>
-                                    <span class="tag concepts">Concepts</span>
+                                    <div class="service-name">Organizations</div><span
+                                        class="tag concepts">Concepts</span>
                                 </div>
                                 <div class="service-description">Centrally govern your environment; manage multiple AWS
                                     accounts and policies.</div>
@@ -481,13 +563,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Trusted Advisor">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Trusted Advisor</div>
-                                    <span class="tag concepts">Concepts</span>
+                                    <div class="service-name">Trusted Advisor</div><span
+                                        class="tag concepts">Concepts</span>
                                 </div>
                                 <div class="service-description">Provides real-time guidance to help you follow AWS best
                                     practices.</div>
@@ -499,13 +580,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Access Analyzer">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Access Analyzer</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Access Analyzer</div><span
+                                        class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Identifies resources shared with external entities,
                                     ensuring least privilege access.</div>
@@ -517,13 +597,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="CloudTrail">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">CloudTrail</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">CloudTrail</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Records AWS API calls, enabling governance, compliance,
                                     and operational auditing.</div>
@@ -535,13 +613,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Cognito">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Cognito</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Cognito</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">User authentication, authorization, and management for
                                     web/mobile apps easily.</div>
@@ -553,13 +629,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Config">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Config</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Config</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Assess, audit, and evaluate configurations of all your
                                     AWS resources.</div>
@@ -571,13 +645,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Credential Reports">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Credential Reports</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Credential Reports</div><span
+                                        class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">IAM report listing all users and the current status of
                                     credentials.</div>
@@ -589,13 +662,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="GuardDuty">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">GuardDuty</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">GuardDuty</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Threat detection service; monitors for malicious or
                                     unauthorized account behavior.</div>
@@ -607,13 +678,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Inspector">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Inspector</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Inspector</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Automated vulnerability management; continually scans
                                     AWS workloads for issues.</div>
@@ -625,13 +694,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="KMS">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">KMS</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">KMS</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Create and manage cryptographic keys to secure and
                                     protect data.</div>
@@ -643,13 +710,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Secrets Manager">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Secrets Manager</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Secrets Manager</div><span
+                                        class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Protects and securely manages secrets like passwords
                                     and API keys.</div>
@@ -661,13 +727,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Shield">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Shield</div>
-                                    <span class="tag security">Security</span>
+                                    <div class="service-name">Shield</div><span class="tag security">Security</span>
                                 </div>
                                 <div class="service-description">Managed DDoS protection service safeguarding your
                                     applications running on AWS.</div>
@@ -679,13 +743,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Athena">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Athena</div>
-                                    <span class="tag technology">Technology</span>
+                                    <div class="service-name">Athena</div><span class="tag technology">Technology</span>
                                 </div>
                                 <div class="service-description">Serverless interactive query service for S3 data using
                                     standard SQL.</div>
@@ -697,13 +759,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="CloudWatch">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">CloudWatch</div>
-                                    <span class="tag technology">Technology</span>
+                                    <div class="service-name">CloudWatch</div><span
+                                        class="tag technology">Technology</span>
                                 </div>
                                 <div class="service-description">Monitors resources & applications; collects metrics,
                                     logs, sets alarms.</div>
@@ -715,13 +776,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="EventBridge">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">EventBridge</div>
-                                    <span class="tag technology">Technology</span>
+                                    <div class="service-name">EventBridge</div><span
+                                        class="tag technology">Technology</span>
                                 </div>
                                 <div class="service-description">Serverless event bus connecting apps, SaaS, and AWS
                                     services.</div>
@@ -733,13 +793,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Fargate">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Fargate</div>
-                                    <span class="tag technology">Technology</span>
+                                    <div class="service-name">Fargate</div><span
+                                        class="tag technology">Technology</span>
                                 </div>
                                 <div class="service-description">Serverless compute for containers (ECS/EKS); no server
                                     management needed.</div>
@@ -751,13 +810,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Health Dashboard">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Health Dashboard</div>
-                                    <span class="tag technology">Technology</span>
+                                    <div class="service-name">Health Dashboard</div><span
+                                        class="tag technology">Technology</span>
                                 </div>
                                 <div class="service-description">Displays AWS service health and personalized account
                                     health status updates.</div>
@@ -769,13 +827,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Systems Manager">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Systems Manager</div>
-                                    <span class="tag technology">Technology</span>
+                                    <div class="service-name">Systems Manager</div><span
+                                        class="tag technology">Technology</span>
                                 </div>
                                 <div class="service-description">Unified interface for operational data viewing and task
                                     automation.</div>
@@ -787,13 +844,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Billing Console">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Billing Console</div>
-                                    <span class="tag billing">Billing</span>
+                                    <div class="service-name">Billing Console</div><span
+                                        class="tag billing">Billing</span>
                                 </div>
                                 <div class="service-description">Central hub for AWS payments, invoices, and all billing
                                     information.</div>
@@ -805,13 +861,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Cost Explorer">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Cost Explorer</div>
-                                    <span class="tag billing">Billing</span>
+                                    <div class="service-name">Cost Explorer</div><span
+                                        class="tag billing">Billing</span>
                                 </div>
                                 <div class="service-description">Visualize, understand, and manage your AWS costs and
                                     usage trends.</div>
@@ -823,13 +878,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="service-card" data-service-name="Cost Management">
                         <div class="service-card-inner">
                             <div class="service-card-front">
                                 <div class="service-header">
-                                    <div class="service-name">Cost Management</div>
-                                    <span class="tag billing">Billing</span>
+                                    <div class="service-name">Cost Management</div><span
+                                        class="tag billing">Billing</span>
                                 </div>
                                 <div class="service-description">Tools (Budgets, CUR) to plan, track, analyze, optimize
                                     spending.</div>
@@ -845,7 +899,11 @@
             </div>
 
             <div class="quick-summary">
-                <h2>⚡ Fast Recall Summary</h2>
+                <div class="recall-summary-header">
+                    <h2>⚡ Fast Recall Summary</h2>
+                    <input type="text" id="recall-search-input"
+                        placeholder="🔍 Search recall topics (e.g., S3, EC2 options)...">
+                </div>
                 <div class="recall-cards-grid">
                     <div class="recall-card">
                         <h3>Instance Purchasing Options</h3>
@@ -886,7 +944,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="recall-card">
                         <h3>S3 Storage Classes</h3>
                         <div class="recall-option">
@@ -953,6 +1010,121 @@
                             </div>
                         </div>
                     </div>
+                    <div class="recall-card">
+                        <h3>AWS Support Plans</h3>
+                        <div class="recall-option">
+                            <h4 class="option-title">Basic Support</h4>
+                            <div class="option-desc">
+                                <p><strong>Description:</strong> Included for all AWS customers. Access to customer
+                                    service for account/billing, documentation, whitepapers, and support forums. Limited
+                                    access to AWS Trusted Advisor (core checks).</p>
+                                <p><strong>Use Case:</strong> Personal accounts, exploring AWS, or non-critical
+                                    workloads where self-service is sufficient.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">Developer Support</h4>
+                            <div class="option-desc">
+                                <p><strong>Description:</strong> Business hours email access to Cloud Support
+                                    Associates. Unlimited cases. General guidance response within 24 business hours.
+                                    System impaired response within 12 business hours.</p>
+                                <p><strong>Use Case:</strong> Early development, testing, or experimenting with AWS. For
+                                    users who need technical support during business hours.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">Business Support</h4>
+                            <div class="option-desc">
+                                <p><strong>Description:</strong> 24x7 phone, email, and chat access to Cloud Support
+                                    Engineers. Unlimited cases. Full set of Trusted Advisor checks. Support API.
+                                    Contextual guidance based on your use-case. Faster response times (e.g., <1 hour for
+                                        production system down).</p>
+                                        <p><strong>Use Case:</strong> Production workloads, businesses relying on AWS
+                                            for critical applications that require fast support and proactive guidance.
+                                        </p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">Enterprise On-Ramp Support</h4>
+                            <div class="option-desc">
+                                <p><strong>Description:</strong> Access to a pool of Technical Account Managers (TAMs),
+                                    concierge support team, infrastructure event management, well-architected reviews.
+                                    Response times as fast as <30 minutes for business-critical systems down).</p>
+                                        <p><strong>Use Case:</strong> Production or business-critical workloads needing
+                                            proactive support, architectural reviews, and operational assistance. A step
+                                            towards full Enterprise support.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">Enterprise Support</h4>
+                            <div class="option-desc">
+                                <p><strong>Description:</strong> All features of Business Support plus a designated
+                                    Technical Account Manager (TAM), concierge support team, white-glove account
+                                    onboarding, infrastructure event management, well-architected reviews, and
+                                    operational reviews. Response times as fast as <15 minutes for business-critical
+                                        systems down).</p>
+                                        <p><strong>Use Case:</strong> Mission-critical workloads, large enterprises with
+                                            significant AWS deployments requiring dedicated proactive support and
+                                            strategic guidance.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="recall-card">
+                        <h3>AWS Well-Architected Framework Pillars</h3>
+                        <div class="recall-option">
+                            <h4 class="option-title">1. Operational Excellence</h4>
+                            <div class="option-desc">
+                                <p>Focuses on running and monitoring systems to deliver business value and continually
+                                    improve supporting processes and procedures. Key topics include automating changes,
+                                    responding to events, and defining standards to manage daily operations.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">2. Security</h4>
+                            <div class="option-desc">
+                                <p>Focuses on protecting information, systems, and assets while delivering business
+                                    value through risk assessments and mitigation strategies. Key topics include
+                                    identity and access management, detective controls, infrastructure protection, data
+                                    protection, and incident response.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">3. Reliability</h4>
+                            <div class="option-desc">
+                                <p>Focuses on the ability of a workload to perform its intended function correctly and
+                                    consistently when it’s expected to. This includes the ability to operate and test
+                                    the workload through its total lifecycle. Key topics include foundations, change
+                                    management, and failure management.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">4. Performance Efficiency</h4>
+                            <div class="option-desc">
+                                <p>Focuses on using IT and computing resources efficiently. Key topics include selecting
+                                    the right resource types and sizes based on workload requirements, monitoring
+                                    performance, and making informed decisions to maintain efficiency as business needs
+                                    evolve.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">5. Cost Optimization</h4>
+                            <div class="option-desc">
+                                <p>Focuses on avoiding unneeded costs. Key topics include understanding and controlling
+                                    where money is being spent, selecting the most appropriate and right number of
+                                    resource types, analyzing spend over time, and scaling to meet business needs
+                                    without overspending.</p>
+                            </div>
+                        </div>
+                        <div class="recall-option">
+                            <h4 class="option-title">6. Sustainability</h4>
+                            <div class="option-desc">
+                                <p>Focuses on minimizing the environmental impacts of running cloud workloads. Key
+                                    topics include understanding your impact, establishing sustainability goals,
+                                    maximizing utilization, adopting new, more efficient hardware and software
+                                    offerings, and using managed services.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -964,45 +1136,80 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Flashcard Toggle Logic ---
             const toggleCheckbox = document.getElementById('flashcard-toggle-checkbox');
             const serviceCards = document.querySelectorAll('.services-grid .service-card');
-            let flashcardModeActive = toggleCheckbox.checked;
+            let flashcardModeActive = toggleCheckbox ? toggleCheckbox.checked : false;
 
-            serviceCards.forEach(card => {
-                const serviceName = card.dataset.serviceName;
-                const backFaceName = card.querySelector('.service-card-back .service-name-back');
-                if (backFaceName) {
-                    backFaceName.textContent = serviceName;
-                }
+            if (toggleCheckbox) {
+                serviceCards.forEach(card => {
+                    const serviceName = card.dataset.serviceName;
+                    const backFaceName = card.querySelector('.service-card-back .service-name-back');
+                    if (backFaceName) {
+                        backFaceName.textContent = serviceName;
+                    }
 
-                card.addEventListener('click', () => {
-                    card.classList.toggle('is-flipped');
+                    card.addEventListener('click', () => {
+                        if (!flashcardModeActive) { // Only allow individual flip if flashcard mode is OFF
+                            card.classList.toggle('is-flipped');
+                        }
+                    });
                 });
-            });
 
-            toggleCheckbox.addEventListener('change', () => {
-                flashcardModeActive = toggleCheckbox.checked;
+                toggleCheckbox.addEventListener('change', () => {
+                    flashcardModeActive = toggleCheckbox.checked;
+                    serviceCards.forEach(card => {
+                        if (flashcardModeActive) {
+                            if (!card.classList.contains('is-flipped')) {
+                                card.classList.add('is-flipped');
+                            }
+                        } else {
+                            if (card.classList.contains('is-flipped')) {
+                                card.classList.remove('is-flipped');
+                            }
+                        }
+                    });
+                });
 
                 serviceCards.forEach(card => {
                     if (flashcardModeActive) {
-                        card.classList.add('is-flipped');
+                        if (!card.classList.contains('is-flipped')) {
+                            card.classList.add('is-flipped');
+                        }
                     } else {
-                        card.classList.remove('is-flipped');
+                        if (card.classList.contains('is-flipped')) {
+                            card.classList.remove('is-flipped');
+                        }
                     }
                 });
-            });
+            }
 
-            if (flashcardModeActive) {
-                serviceCards.forEach(card => {
-                    if (!card.classList.contains('is-flipped')) {
-                        card.classList.add('is-flipped');
-                    }
-                });
-            } else {
-                serviceCards.forEach(card => {
-                    if (card.classList.contains('is-flipped')) {
-                        card.classList.remove('is-flipped');
-                    }
+            // --- Recall Cards Search Logic ---
+            const searchInput = document.getElementById('recall-search-input');
+            const recallCardsGrid = document.querySelector('.quick-summary .recall-cards-grid');
+            const recallCards = recallCardsGrid ? Array.from(recallCardsGrid.querySelectorAll('.recall-card')) : [];
+
+            if (searchInput && recallCards.length > 0) {
+                searchInput.addEventListener('input', function () {
+                    const searchTerm = this.value.toLowerCase().trim(); // Case-insensitive search
+
+                    recallCards.forEach(card => {
+                        const cardTitleElement = card.querySelector('h3');
+                        let cardVisible = false;
+
+                        if (cardTitleElement) {
+                            const cardTitle = cardTitleElement.textContent.toLowerCase(); // Case-insensitive comparison
+                            if (cardTitle.includes(searchTerm)) {
+                                cardVisible = true;
+                            }
+                        }
+
+                        if (cardVisible) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
                 });
             }
         });
