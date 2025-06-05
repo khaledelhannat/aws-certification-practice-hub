@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cloud Practitioner - Practice Questions</title>
+    <link rel="icon" type="image/png" href="https://content.cloudthat.com/resources/wp-content/uploads/2023/12/dgt.png">
+    <style>
+        :root {
+            --brand-orange: #ff9900;
+            --dark-gray-1: #0f1419;
+            --dark-gray-2: #1a2332;
+            --dark-gray-3: #232f3e;
+            --text-light: #ffffff;
+            --text-muted: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--dark-gray-1) 0%, var(--dark-gray-2) 50%, var(--dark-gray-3) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 90%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, var(--text-light), var(--brand-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .question-count {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--brand-orange), #ffb84d);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            background: linear-gradient(145deg, #1e2936, #2a3441);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 153, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .player-crop-wrapper,
+        #video-click-target,
+        .custom-controls {
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .video-wrapper:not(.has-started) .player-crop-wrapper,
+        .video-wrapper:not(.has-started) #video-click-target,
+        .video-wrapper:not(.has-started) .custom-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-wrapper.has-started .player-crop-wrapper,
+        .video-wrapper.has-started #video-click-target,
+        .video-wrapper.has-started .custom-controls {
+            opacity: 1;
+        }
+
+        #start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            background: rgba(15, 20, 25, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            text-align: center;
+            padding: 1rem;
+            opacity: 1;
+            transition: opacity 0.4s ease-in-out;
+            pointer-events: all;
+        }
+
+        .video-wrapper.has-started #start-overlay {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #start-overlay h2 {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--text-light);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #start-practice-btn {
+            background: var(--brand-orange);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #start-practice-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 153, 0, 0.3);
+        }
+
+        #start-practice-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #000;
+        }
+
+        #player-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .player-crop-wrapper {
+            overflow: hidden;
+            border-radius: 12px;
+            width: 100%;
+            height: 100%;
+        }
+
+        #player {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: calc(100% + 120px);
+            top: -60px;
+        }
+
+        #video-click-target {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 3;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        }
+
+        .video-wrapper.has-started:hover .custom-controls {
+            opacity: 1;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .control-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-light);
+            filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+        }
+
+        #playPauseBtn .pause-icon {
+            display: none;
+        }
+
+        #playPauseBtn.is-playing .play-icon {
+            display: none;
+        }
+
+        #playPauseBtn.is-playing .pause-icon {
+            display: block;
+        }
+
+        #timeDisplay {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            min-width: 90px;
+            text-align: center;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .progress-bar-track,
+        .progress-bar-fill {
+            height: 5px;
+            border-radius: 5px;
+        }
+
+        .progress-bar-track {
+            position: relative;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-bar-fill {
+            background: var(--brand-orange);
+            width: 0%;
+        }
+
+        .progress-bar-thumb {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            width: 15px;
+            height: 15px;
+            background: var(--text-light);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .progress-bar-container:hover .progress-bar-thumb {
+            opacity: 1;
+        }
+
+        .instructions,
+        .footer {
+            text-align: center;
+            max-width: 600px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin: 0rem auto 0 auto;
+        }
+
+        .footer {
+            padding: 2rem 0 0 0;
+            border-top: 1px solid rgba(255, 153, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="certification-pattern"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Cloud Practitioner Certification</h1>
+            <p class="subtitle">Master your AWS fundamentals with comprehensive practice</p>
+            <span class="question-count">1400+ Practice Questions</span>
+        </div>
+
+        <div class="video-container">
+            <div class="video-wrapper">
+                <div id="player-container">
+                    <div class="player-crop-wrapper">
+                        <div id="player"></div>
+                    </div>
+                </div>
+
+                <div id="video-click-target"></div>
+
+                <div id="start-overlay">
+                    <h2 id="start-overlay-title">Continue Your Practice</h2>
+                    <button id="start-practice-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg>
+                        <span id="start-btn-text">Start Session</span>
+                    </button>
+                </div>
+
+                <div class="custom-controls">
+                    <button id="rewindBtn" class="control-btn" aria-label="Rewind 5 seconds"><svg viewBox="0 0 24 24">
+                            <path d="M11.5,12L20,18V6M11,18V6L2.5,12L11,18Z" />
+                        </svg></button>
+                    <button id="playPauseBtn" class="control-btn" aria-label="Play/Pause"><svg class="play-icon"
+                            viewBox="0 0 24 24">
+                            <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        </svg><svg class="pause-icon" viewBox="0 0 24 24">
+                            <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        </svg></button>
+                    <button id="forwardBtn" class="control-btn" aria-label="Forward 5 seconds"><svg viewBox="0 0 24 24">
+                            <path d="M13,12L4.5,6V18M13.5,18V6L22,12L13.5,18Z" />
+                        </svg></button>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill"></div>
+                            <div class="progress-bar-thumb"></div>
+                        </div>
+                    </div>
+                    <div id="timeDisplay">00:00 / 00:00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <p>This comprehensive practice session contains over 1400 questions designed to help you ace the AWS Cloud
+                Practitioner certification exam. Each question includes detailed answers with explanations to help you
+                understand the concepts and reasoning behind the correct solutions.</p>
+        </div>
+
+        <footer class="footer">
+            <p>© 2025 AWS Certified Cloud Practitioner. All Rights Reserved.</p>
+            <p>Made with ❤️ by <strong>Khaled Elhannat</strong></p>
+        </footer>
+    </div>
+
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        const videoWrapper = document.querySelector('.video-wrapper');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const rewindBtn = document.getElementById('rewindBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const progressBarFill = document.querySelector('.progress-bar-fill');
+        const progressBarThumb = document.querySelector('.progress-bar-thumb');
+        const progressBarContainer = document.querySelector('.progress-bar-container');
+        const videoClickTarget = document.getElementById('video-click-target');
+        const startPracticeBtn = document.getElementById('start-practice-btn');
+        const startOverlayTitle = document.getElementById('start-overlay-title');
+        const startBtnText = document.getElementById('start-btn-text');
+
+        // --- NEW: Session timing constants ---
+        const startSeconds = 40;
+        const endSeconds = (24 * 60 * 60) + 19; // 24 minutes and 19 seconds
+
+        var progressInterval;
+        var isScrubbing = false;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: 'ocVO5feQOeg',
+                playerVars: {
+                    'playsinline': 1, 'controls': 0, 'rel': 0, 'modestbranding': 1, 'showinfo': 0, 'mute': 1, 'iv_load_policy': 3
+                },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Player is ready, but we wait for user interaction to start.
+        }
+
+        function onPlayerStateChange(event) {
+            // --- UPDATED: For seamless transition and state management ---
+            if (event.data == YT.PlayerState.PLAYING) {
+                // This is the key to the flicker fix: only show the player when it's truly playing.
+                videoWrapper.classList.add('has-started');
+                playPauseBtn.classList.add('is-playing');
+            } else {
+                playPauseBtn.classList.remove('is-playing');
+            }
+        }
+
+        function formatTime(seconds) {
+            seconds = Math.round(seconds);
+            const totalDuration = endSeconds - startSeconds; // Display time relative to session length
+            if (totalDuration >= 3600) {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = seconds % 60;
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            } else {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+        }
+
+        // --- NEW: Function to end the session ---
+        function endSession() {
+            player.pauseVideo();
+            videoWrapper.classList.remove('has-started');
+            startOverlayTitle.textContent = 'Session Complete!';
+            startBtnText.textContent = 'Restart Session';
+            clearInterval(progressInterval); // Stop updating the UI
+        }
+
+        function updateUI() {
+            if (player && player.getDuration && !isScrubbing) {
+                const currentTime = player.getCurrentTime();
+
+                // Check if session should end
+                if (currentTime >= endSeconds) {
+                    endSession();
+                    return; // Exit the function
+                }
+
+                const sessionTime = currentTime - startSeconds;
+                const sessionDuration = endSeconds - startSeconds;
+
+                const progress = (sessionTime / sessionDuration) * 100;
+                progressBarFill.style.width = `${progress}%`;
+                progressBarThumb.style.left = `${progress}%`;
+                timeDisplay.textContent = `${formatTime(sessionTime)} / ${formatTime(sessionDuration)}`;
+            }
+        }
+
+        function togglePlayPause() {
+            if (!videoWrapper.classList.contains('has-started')) return;
+            const state = player.getPlayerState();
+            if (state == YT.PlayerState.PLAYING) player.pauseVideo();
+            else player.playVideo();
+        }
+
+        function seek(seconds) {
+            if (!videoWrapper.classList.contains('has-started')) return;
+            // Constrain seeking within the session boundaries
+            const newTime = player.getCurrentTime() + seconds;
+            if (newTime < startSeconds) player.seekTo(startSeconds, true);
+            else if (newTime > endSeconds) player.seekTo(endSeconds, true);
+            else player.seekTo(newTime, true);
+        }
+
+        function scrubTo(event) {
+            const rect = progressBarContainer.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+
+            // Calculate time based on session duration, not full video duration
+            const sessionDuration = endSeconds - startSeconds;
+            const newTime = startSeconds + (sessionDuration * percentage);
+
+            player.seekTo(newTime, true);
+
+            progressBarFill.style.width = `${percentage * 100}%`;
+            progressBarThumb.style.left = `${percentage * 100}%`;
+        }
+
+        // --- Event Listeners ---
+
+        startPracticeBtn.addEventListener('click', () => {
+            // Reset overlay text in case it was a restart
+            startOverlayTitle.textContent = 'Continue Your Practice';
+            startBtnText.textContent = 'Start Session';
+
+            player.seekTo(startSeconds, true);
+            player.playVideo(); // This will trigger onPlayerStateChange to show the video
+
+            clearInterval(progressInterval); // Clear any existing interval
+            progressInterval = setInterval(updateUI, 100);
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        rewindBtn.addEventListener('click', () => seek(-5));
+        forwardBtn.addEventListener('click', () => seek(5));
+        videoClickTarget.addEventListener('click', togglePlayPause);
+
+        progressBarContainer.addEventListener('mousedown', (e) => {
+            if (!videoWrapper.classList.contains('has-started')) return;
+            isScrubbing = true;
+            scrubTo(e);
+            document.addEventListener('mousemove', scrubTo);
+            document.addEventListener('mouseup', () => {
+                isScrubbing = false;
+                document.removeEventListener('mousemove', scrubTo);
+            }, { once: true });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (!player || typeof player.getPlayerState !== 'function' || event.target.tagName.toLowerCase() === 'input' || !videoWrapper.classList.contains('has-started')) return;
+            switch (event.key) {
+                case ' ': event.preventDefault(); togglePlayPause(); break;
+                case 'ArrowLeft': seek(-5); break;
+                case 'ArrowRight': seek(5); break;
+            }
+        });
+    </script>
+</body>
+
+</html>
